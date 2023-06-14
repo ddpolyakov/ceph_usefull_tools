@@ -7,7 +7,7 @@ def init_pg(cluster=None):
       cluster = "ceph"
   pg_json = subprocess.run(['ceph','--cluster',cluster,'pg','dump','--format=json'], stdout=subprocess.PIPE)
   pg_data = json.loads(pg_json.stdout)
-  return pg_data['pg_map']
+  return pg_data['pg_map'] if "pg_map" in pg_data else pg_data # respect old versions
 
 def init_from_file():
     with open("mydump.json", "r") as f:
