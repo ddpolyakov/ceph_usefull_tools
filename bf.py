@@ -41,7 +41,7 @@ def pgs_scrub(cluster,use_file):
 def pgs_backfill(action,osd,cluster,use_file):
     global_progress_list = []
     if osd: osd = int(osd)
-    wait, now = [],[]
+    wait, now, too = [],[],[]
     if use_file:
         stats = init_from_file()['pg_stats']
     else:
@@ -52,12 +52,18 @@ def pgs_backfill(action,osd,cluster,use_file):
             wait.append(pg)
         if 'backfilling' in state:
             now.append(pg)
+        if 'backfill_toofull' in state:
+            too.append(pg)
         total_progress = []
     print("Backfilling now:")
     pg = None
     for pg in now:
         if osd: 
-            if (osd in set(pg["acting"])) or (osd in set(pg["up"])):
+            up = set(pg['up'])
+            acting = set(pg['acting'])
+            where_from = set(acting) - set(up)
+            where_to = set(up) - set(acting)
+            if (osd in where_from or osd in where_to):
                 pg_print(pg=pg)
                 continue
             else:
@@ -68,7 +74,11 @@ def pgs_backfill(action,osd,cluster,use_file):
     print("Backfill wait:")
     for pg in wait:
         if osd: 
-            if (osd in set(pg["acting"])) or (osd in set(pg["up"])):
+            up = set(pg['up'])
+            acting = set(pg['acting'])
+            where_from = set(acting) - set(up)
+            where_to = set(up) - set(acting)
+            if (osd in where_from or osd in where_to):
                 pg_print(pg=pg)
                 continue
             else:
@@ -76,7 +86,21 @@ def pgs_backfill(action,osd,cluster,use_file):
         else:
                 pg_print(pg=pg)
     pg = None
-
+    print("Toofull:")
+    for pg in too:
+        if osd:
+            up = set(pg['up'])
+            acting = set(pg['acting'])
+            where_from = set(acting) - set(up)
+            where_to = set(up) - set(acting)
+            if (osd in where_from or osd in where_to):
+                pg_print(pg=pg)
+                continue
+            else:
+                continue
+        else:
+                pg_print(pg=pg)
+    pg = None
 
 
 def pg_print(pg=None, action=None):
