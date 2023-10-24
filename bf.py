@@ -118,7 +118,7 @@ def pg_print(pg=None, action=None):
     num_objects_copies = pg['stat_sum']['num_object_copies']
     num_faulty_objects = max([pg['stat_sum']['num_objects_degraded'],pg['stat_sum']['num_objects_misplaced']])
     object_perc = 1 - (float(num_faulty_objects) / float(num_objects_copies) if num_objects_copies > 0 else 0)
-    print("pg %s %s from osd %s to osd %s size of %.2f, progress: %.2f" % (pgid, state,where_from, where_to, num_gb, object_perc))
+    print("pg %s %s from osd %s to osd %s size of %.2f, progress: %.4f" % (pgid, state,where_from, where_to, num_gb, object_perc))
     # return(object_perc)
 
 
